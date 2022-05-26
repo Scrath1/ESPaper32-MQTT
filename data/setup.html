@@ -2,10 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>Test</title>
+    <title>Setup</title>
 </head>
 <body>
-    <h1>Test</h1>
-	<p>Hello world</p>
+    <label for="WiFi-Form">WiFi Credentials</label>
+    <form action="/setup" method="post" id="WiFi-Form">
+        <label for="ssid">SSID</label>
+        <input type="text" id="ssid" name="ssid"/>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password"/>
+        <input type="submit"/>
+    </form>
+    <label for="Clear-Form">Clear Settings</label>
+    <form action="/setup" method="post" id="Clear-Form">
+        <input type="hidden" id="clearsettings" name="clearsettings"/>
+        <input type="submit" value="Clear All Settings" onclick="return confirm('Are you sure?')"/>
+    </form>
 </body>
 </html>
