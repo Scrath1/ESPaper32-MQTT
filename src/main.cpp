@@ -4,6 +4,7 @@
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
 #include "webserver.h"
+#include "epaper/epaper.h"
 
 const char* apSSID = "ESP-Epaper";
 const char* apPassword = "123456789";
@@ -42,6 +43,7 @@ void setup() {
         Serial.println(WiFi.localIP());
     }
     setupWebServer(server);
+    displayTest();
 }
 
 void loop() {
