@@ -39,6 +39,11 @@ Epd::Epd() {
     height = EPD_HEIGHT;
 };
 
+/**
+ * @brief Initialize e-Paper, it should be used to initialize e-Paper or wakeup e-Paper from sleep mode.
+ * 
+ * @return int 0 on success, -1 if the hardware initialization failed
+ */
 int Epd::Init(void) {
     /* this calls the peripheral hardware interface, see epdif */
     if (IfInit() != 0) {
@@ -57,16 +62,21 @@ int Epd::Init(void) {
     return 0;
 }
 
+
 /**
- *  @brief: basic function for sending commands
+ * @brief basic function for sending commands
+ * 
+ * @param command supported commands are contained in EPD_Commands enum
  */
-void Epd::SendCommand(unsigned char command) {
+void Epd::SendCommand(EPD_Commands command) {
     DigitalWrite(dc_pin, LOW);
     SpiTransfer(command);
 }
 
 /**
- *  @brief: basic function for sending data
+ *  @brief basic function for sending data
+ * 
+ *  @param data
  */
 void Epd::SendData(unsigned char data) {
     DigitalWrite(dc_pin, HIGH);
@@ -74,7 +84,7 @@ void Epd::SendData(unsigned char data) {
 }
 
 /**
- *  @brief: Wait until the busy_pin goes HIGH
+ *  @brief Wait until the busy_pin goes HIGH
  */
 void Epd::WaitUntilIdle(void) {
     while(DigitalRead(busy_pin) == 0) {      //0: busy, 1: idle
@@ -83,7 +93,7 @@ void Epd::WaitUntilIdle(void) {
 }
 
 /**
- *  @brief: module reset. 
+ *  @brief module reset. 
  *          often used to awaken the module in deep sleep, 
  *          see Epd::Sleep();
  */
@@ -97,7 +107,7 @@ void Epd::Reset(void) {
 }
 
 /**
- *  @brief: transmit partial data to the SRAM
+ *  @brief transmit partial data to the SRAM
  */
 void Epd::SetPartialWindow(const unsigned char* buffer_black, const unsigned char* buffer_red, int x, int y, int w, int l) {
     SendCommand(PARTIAL_IN);
@@ -130,7 +140,7 @@ void Epd::SetPartialWindow(const unsigned char* buffer_black, const unsigned cha
 }
 
 /**
- *  @brief: transmit partial data to the black part of SRAM
+ *  @brief transmit partial data to the black part of SRAM
  */
 void Epd::SetPartialWindowBlack(const unsigned char* buffer_black, int x, int y, int w, int l) {
     SendCommand(PARTIAL_IN);
@@ -156,7 +166,7 @@ void Epd::SetPartialWindowBlack(const unsigned char* buffer_black, int x, int y,
 }
 
 /**
- *  @brief: transmit partial data to the red part of SRAM
+ *  @brief transmit partial data to the red part of SRAM
  */
 void Epd::SetPartialWindowRed(const unsigned char* buffer_red, int x, int y, int w, int l) {
     SendCommand(PARTIAL_IN);
@@ -182,7 +192,7 @@ void Epd::SetPartialWindowRed(const unsigned char* buffer_red, int x, int y, int
 }
 
 /**
- * @brief: refresh and displays the frame
+ * @brief refresh and displays the frame
  */
 void Epd::DisplayFrame(const unsigned char* frame_black, const unsigned char* frame_red) {
     if (frame_black != NULL) {
@@ -206,7 +216,7 @@ void Epd::DisplayFrame(const unsigned char* frame_black, const unsigned char* fr
 }
 
 /**
- * @brief: clear the frame data from the SRAM, this won't refresh the display
+ * @brief clear the frame data from the SRAM, this won't refresh the display
  */
 void Epd::ClearFrame(void) {
     SendCommand(DATA_START_TRANSMISSION_1);           
@@ -224,7 +234,7 @@ void Epd::ClearFrame(void) {
 }
 
 /**
- * @brief: This displays the frame data from SRAM
+ * @brief This displays the frame data from SRAM
  */
 void Epd::DisplayFrame(void) {
     SendCommand(DISPLAY_REFRESH); 
@@ -233,7 +243,7 @@ void Epd::DisplayFrame(void) {
 }
 
 /**
- * @brief: After this command is transmitted, the chip would enter the deep-sleep mode to save power. 
+ * @brief After this command is transmitted, the chip would enter the deep-sleep mode to save power. 
  *         The deep sleep mode would return to standby by hardware reset. The only one parameter is a 
  *         check code, the command would be executed if check code = 0xA5. 
  *         You can use Epd::Reset() to awaken and use Epd::Init() to initialize.

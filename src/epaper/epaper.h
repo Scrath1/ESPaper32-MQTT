@@ -8,4 +8,4 @@
 #define COLORED     0
 #define UNCOLORED   1
 
-void displayTest();
+void displayTestImage();

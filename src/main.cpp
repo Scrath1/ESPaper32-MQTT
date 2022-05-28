@@ -43,7 +43,7 @@ void setup() {
         Serial.println(WiFi.localIP());
     }
     setupWebServer(server);
-    displayTest();
+    displayTestImage();
 }
 
 void loop() {

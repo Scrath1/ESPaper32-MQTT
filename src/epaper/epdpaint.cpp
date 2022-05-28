@@ -82,7 +82,12 @@ unsigned char* Paint::GetImage(void) {
 int Paint::GetWidth(void) {
     return this->width;
 }
-
+/**
+ * @brief Sets width to a width divisible by 8. If width is not divisible by 8 rounds width up to next divisible number
+ * e.g. width = 403 => not divisibly by 8 => new width is 408 instead
+ * 
+ * @param width 
+ */
 void Paint::SetWidth(int width) {
     this->width = width % 8 ? width + 8 - (width % 8) : width;
 }
@@ -99,7 +104,7 @@ int Paint::GetRotate(void) {
     return this->rotate;
 }
 
-void Paint::SetRotate(int rotate){
+void Paint::SetRotate(Rotation rotate){
     this->rotate = rotate;
 }
 

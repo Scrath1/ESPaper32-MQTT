@@ -27,11 +27,16 @@
 #ifndef EPDPAINT_H
 #define EPDPAINT_H
 
-// Display orientation
-#define ROTATE_0            0
-#define ROTATE_90           1
-#define ROTATE_180          2
-#define ROTATE_270          3
+/**
+ * @brief Used for SetRotate Command
+ * 
+ */
+enum Rotation{
+    ROTATE_0 = 0,
+    ROTATE_90 = 1,
+    ROTATE_180 = 2,
+    ROTATE_270 = 3
+};
 
 // Color inverse. 1 or 0 = set or reset a bit if set a colored pixel
 #define IF_INVERT_COLOR     1
@@ -48,7 +53,7 @@ public:
     int  GetHeight(void);
     void SetHeight(int height);
     int  GetRotate(void);
-    void SetRotate(int rotate);
+    void SetRotate(Rotation rotate);
     unsigned char* GetImage(void);
     void DrawAbsolutePixel(int x, int y, int colored);
     void DrawPixel(int x, int y, int colored);

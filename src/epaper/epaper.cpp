@@ -2,7 +2,7 @@
 
 Epd epd;
 
-void displayTest() {
+void displayTestImage() {
     if (epd.Init() != 0) {
         Serial.print("e-Paper init failed");
         return;
@@ -19,7 +19,7 @@ void displayTest() {
      */
     unsigned char image[1500];
     Paint paint(image, 400, 28);  // width should be the multiple of 8
-
+    paint.SetRotate(ROTATE_180);
     paint.Clear(UNCOLORED);
     paint.DrawStringAt(0, 0, "e-Paper Demo", &Font24, COLORED);
     epd.SetPartialWindowBlack(paint.GetImage(), 100, 40, paint.GetWidth(), paint.GetHeight());
@@ -55,7 +55,6 @@ void displayTest() {
     /* This displays an image */
     // epd.DisplayFrame(IMAGE_BLACK, IMAGE_RED);
 
-    Serial.println("Going to sleep");
     /* Deep sleep */
     epd.Sleep();
 }
