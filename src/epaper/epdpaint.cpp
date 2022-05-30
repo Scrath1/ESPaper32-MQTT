@@ -39,7 +39,7 @@ Paint::~Paint() {
 }
 
 /**
- *  @brief: clear the image
+ *  @brief clear the image
  */
 void Paint::Clear(int colored) {
     for (int x = 0; x < this->width; x++) {
@@ -50,7 +50,7 @@ void Paint::Clear(int colored) {
 }
 
 /**
- *  @brief: this draws a pixel by absolute coordinates.
+ *  @brief this draws a pixel by absolute coordinates.
  *          this function won't be affected by the rotate parameter.
  */
 void Paint::DrawAbsolutePixel(int x, int y, int colored) {
@@ -73,7 +73,7 @@ void Paint::DrawAbsolutePixel(int x, int y, int colored) {
 }
 
 /**
- *  @brief: Getters and Setters
+ *  @brief Getters and Setters
  */
 unsigned char* Paint::GetImage(void) {
     return this->image;
