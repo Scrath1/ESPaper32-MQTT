@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "epd4in2b_V2.h"
 #include "epdpaint.h"
+#include "graphic_objects/graph.h"
 
 enum Color {
     WHITE = 0,
