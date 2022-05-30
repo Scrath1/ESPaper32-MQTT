@@ -3,8 +3,8 @@
 
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
-#include "webserver.h"
 #include "epaper/epdframe.h"
+#include "webserver.h"
 
 const char* apSSID = "ESP-Epaper";
 const char* apPassword = "123456789";
@@ -89,7 +89,7 @@ void setup() {
     if (ssid != "") {  // try to connect to known Access Point
         WiFi.mode(WIFI_STA);
         WiFi.begin(ssid.c_str(), password.c_str());
-        for (int i = 0; i < 10 || WiFi.status() != WL_CONNECTED; ++i) {
+        for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; ++i) {
             Serial.print('.');
             delay(1000);
         }
@@ -104,9 +104,37 @@ void setup() {
     }
     setupWebServer(server);
     EPDFrame frame;
-    frame.displayGrid();
-    frame.drawLine(0,0,EPD_WIDTH,EPD_HEIGHT, RED);
-    frame.drawLine(0,EPD_HEIGHT, EPD_WIDTH, 0, BLACK);
+    // frame.displayGrid();
+    Graph g(200, 250);
+    g.setAxisThickness(4);
+    g.pushData(0, 0);
+    g.pushData(0, 70);
+    g.pushData(0, -25);
+    g.pushData(0, 100);
+    g.pushData(0, 40);
+    g.pushData(0, -20);
+    g.pushData(0, 15);
+    g.pushData(0, 70);
+    g.pushData(0, -10);
+    g.pushData(0, 0);
+    frame.drawGraph(10, 10, g);
+    int x0 = 50;
+    int x1 = 250;
+    int y0 = 50;
+    int y1 = 100;
+    int offset = 10;
+    frame.drawLine(x0, y0 - offset, x1, y1 - offset, BLACK);
+    frame.drawLine(x0, y0, x1, y1, DARK_RED);
+    frame.drawLine(x0, y0 + offset, x1, y1 + offset, RED);
+    frame.drawLine(x0, y0 + 2 * offset, x1, y1 + 2 * offset, RED);
+    frame.drawLine(x0, y0 + 1 + 2 * offset, x1, y1 + 1 + 2 * offset, BLACK);
+    frame.drawLine(x0, y0 + 3 * offset, x1, y1 + 3 * offset, BLACK);
+    frame.drawLine(x0, y0 + 1 + 3 * offset, x1, y1 + 1 + 3 * offset, BLACK);
+    frame.drawLine(x0, y0 + 4 * offset, x1, y1 + 4 * offset, RED);
+    frame.drawLine(x0, y0 + 1 + 4 * offset, x1, y1 + 1 + 4 * offset, BLACK);
+    frame.drawLine(x0, y0 + 2 + 4 * offset, x1, y1 + 2 + 4 * offset, RED);
+    frame.drawHorizontalLine(50,250, 50, DARK_RED);
+    frame.drawRectangle(300, 25, 400, 75, DARK_RED, true);
     frame.refresh();
     // displayTestImage();
 }

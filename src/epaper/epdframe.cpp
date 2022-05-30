@@ -78,6 +78,9 @@ void EPDFrame::drawLine(int x0, int y0, int x1, int y1, Color color) {
         case RED:
             redCanvas.DrawLine(x0, y0, x1, y1, COLORED);
             break;
+        case DARK_RED:
+            drawDarkRedLine(x0, y0, x1, y1);
+            break;
         default:
             blackCanvas.DrawLine(x0, y0, x1, y1, COLORED);
     }
@@ -91,6 +94,9 @@ void EPDFrame::drawHorizontalLine(int x, int y, int width, Color color) {
         case RED:
             redCanvas.DrawHorizontalLine(x, y, width, COLORED);
             break;
+        case DARK_RED:
+            drawDarkRedHorizontalLine(x, y, width);
+            break;
         default:
             blackCanvas.DrawHorizontalLine(x, y, width, COLORED);
     }
@@ -103,6 +109,9 @@ void EPDFrame::drawVerticalLine(int x, int y, int height, Color color) {
             break;
         case RED:
             redCanvas.DrawVerticalLine(x, y, height, COLORED);
+            break;
+        case DARK_RED:
+            drawDarkRedVerticalLine(x, y, height);
             break;
         default:
             blackCanvas.DrawVerticalLine(x, y, height, COLORED);
@@ -142,6 +151,8 @@ void EPDFrame::drawRectangle(int x0, int y0, int x1, int y1, Color color, bool f
         colored = UNCOLORED;
     else if (color == RED)
         canvas = redCanvas;
+    else if (color == DARK_RED && filled)
+        drawDarkRedFilledRectangle(x0, y0, x1, y1);
 
     if (filled)
         canvas.DrawFilledRectangle(x0, y0, x1, y1, colored);
@@ -163,9 +174,143 @@ void EPDFrame::drawCircle(int x, int y, int radius, Color color, bool filled) {
         canvas.DrawCircle(x, y, radius, colored);
 }
 
-void EPDFrame::drawGraph(int x, int y, const Graph& graph){
-    int h = graph.getHeight();
-    int w = graph.getWidth();
-    blackCanvas.DrawVerticalLine(x, y, h, COLORED);
-    blackCanvas.DrawHorizontalLine(x, y-h/2, w, COLORED);
+/**
+ * @brief Draws the interval bars for the graph
+ *
+ * @param x x position of the graph
+ * @param xAxPos y position of the graphs x-axis
+ * @param h graph height
+ * @param w graph width
+ * @param aT graph axisThickness
+ * @param numIntervals number of intervals on the x-Axis
+ */
+void EPDFrame::drawGraphXIntervalbars(int x, int xAxPos, unsigned int h, unsigned int w, unsigned int aT, unsigned int numIntervals) {
+    int xOffset = w / (numIntervals - 1);
+    // x intervals
+    for (int i = 1; i < numIntervals; ++i) {
+        blackCanvas.DrawVerticalLine(x + aT + xOffset * i, xAxPos - 5, 10 + aT, COLORED);
+    }
+}
+
+void EPDFrame::drawGraphYIntervalbars(int x, int y, unsigned int h, unsigned int aT, int minVal, int numIntervals) {
+}
+
+void EPDFrame::drawGraph(int x, int y, const Graph& graph) {
+    unsigned int h = graph.getHeight();
+    unsigned int w = graph.getWidth();
+    unsigned int aT = graph.getAxisThickness();
+    int maxVal = graph.getMaxValue();
+    int minVal = graph.getMinValue();
+    maxVal = maxVal % 5 ? maxVal + 5 - (maxVal % 5) : maxVal;  // scales to next largest number divisible by 5
+    minVal = minVal % 5 ? minVal - 5 + (minVal % 5) : minVal;
+    int absMaxVal = sqrt(maxVal * maxVal);
+    int absMinVal = sqrt(minVal * minVal);
+
+    int numYIntervals = (absMaxVal + absMinVal) / 5;
+
+    // y position of the x axis
+    unsigned int xAxPos = y + h - (static_cast<float>(h) * (static_cast<float>(absMinVal) / absMaxVal));
+    Serial.print("xAxPos: ");
+    Serial.println(xAxPos);
+    blackCanvas.DrawFilledRectangle(x, y, x + aT, y + h, COLORED);            // y axis bar
+    blackCanvas.DrawFilledRectangle(x, xAxPos, x + w, xAxPos + aT, COLORED);  // x axis bar
+
+    int dSize = graph.getLineDataArray()[0].size();
+    int xOffset = w / (dSize - 1);
+    drawGraphXIntervalbars(x, xAxPos, h, w, aT, dSize);
+    drawGraphYIntervalbars(x, y, h, aT, minVal, numYIntervals);
+
+    // draw data lines
+    for (Linedata d : graph.getLineDataArray()) {
+        for (int i = 1; i < dSize; ++i) {
+            if (d[i] == NO_VALUE) break;
+            // TODO: scale data to axis;
+            // int y0 = xAxPos-map(d[i-1], 0, h, minVal, maxVal);
+            int y0 = xAxPos - d[i - 1];
+            int y1 = xAxPos - d[i];
+            // int y1 = xAxPos-map(d[i], 0, h, minVal, maxVal);
+            int x0 = x + aT + xOffset * (i - 1);
+            int x1 = x + aT + xOffset * (i);
+
+            // draw line from point 0 to point 1
+            blackCanvas.DrawLine(x0, y0, x1, y1, COLORED);
+        }
+    }
+}
+
+/**
+ * @brief basically DrawLine from the Paint class but with alternating pixel colors
+ *
+ * @param x0
+ * @param y0
+ * @param x1
+ * @param y1
+ */
+void EPDFrame::drawDarkRedLine(int x0, int y0, int x1, int y1) {
+    /* Bresenham algorithm */
+    int dx = x1 - x0 >= 0 ? x1 - x0 : x0 - x1;
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = y1 - y0 <= 0 ? y1 - y0 : y0 - y1;
+    int sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    Paint* paint;
+    int counter = 0;
+    while ((x0 != x1) && (y0 != y1)) {
+        // draw every second pixel red or black
+        if (counter % 2)
+            paint = &redCanvas;
+        else
+            paint = &blackCanvas;
+        paint->DrawPixel(x0, y0, COLORED);
+        if (2 * err >= dy) {
+            err += dy;
+            x0 += sx;
+        }
+        if (2 * err <= dx) {
+            err += dx;
+            y0 += sy;
+        }
+        counter++;
+    }
+}
+
+void EPDFrame::drawDarkRedHorizontalLine(int x, int y, int line_width) {
+    Paint* paint;
+    for (int i = x; i < x + line_width; i++) {
+        // draw every second pixel red or black
+        if (i % 2)
+            paint = &redCanvas;
+        else
+            paint = &blackCanvas;
+        paint->DrawPixel(i, y, COLORED);
+    }
+}
+
+void EPDFrame::drawDarkRedVerticalLine(int x, int y, int line_height) {
+    Paint* paint;
+    for (int i = y; i < y + line_height; i++) {
+        if (i % 2)
+            paint = &redCanvas;
+        else
+            paint = &blackCanvas;
+        paint->DrawPixel(x, i, COLORED);
+    }
+}
+
+void EPDFrame::drawDarkRedFilledRectangle(int x0, int y0, int x1, int y1) {
+    int min_x, min_y, max_x, max_y;
+    min_x = x1 > x0 ? x0 : x1;
+    max_x = x1 > x0 ? x1 : x0;
+    min_y = y1 > y0 ? y0 : y1;
+    max_y = y1 > y0 ? y1 : y0;
+    Paint* paint;
+    for (int i = min_x; i <= max_x; i++) {
+        for (int j = min_y; j <= max_y; j++) {
+            if (i * j % 2)
+                paint = &redCanvas;
+            else
+                paint = &blackCanvas;
+            paint->DrawPixel(i, j, COLORED);
+        }
+    }
 }

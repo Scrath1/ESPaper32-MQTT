@@ -1,6 +1,6 @@
 #include "graph.h"
 
-Linedata::Linedata() : offsetIndex(0) {
+Linedata::Linedata() : newestIndex(data.size()-1) {
     for (int i = 0; i < data.size(); ++i) {
         data[i] = NO_VALUE;
     }
@@ -11,12 +11,13 @@ Linedata::Linedata(const char* l) : label(l) {
 }
 
 void Linedata::pushBack(int d) {
-    offsetIndex = offsetIndex % data.size();  // wraps around to first element after last value
-    data[offsetIndex] = d;
-    offsetIndex++;
+    newestIndex = ++newestIndex%data.size();
+    data[newestIndex] = d;
 }
 
-Graph::Graph(int x, int y, unsigned int w, unsigned int h)
+int Linedata::size() const { return data.size(); }
+
+Graph::Graph(unsigned int w, unsigned int h)
     : width(w), height(h) {
 }
 
@@ -44,12 +45,33 @@ int Graph::getMinValue() const {
     int min = NO_VALUE;
     for (Linedata a : data) {
         for (int v : a.data) {
-            if (min != NO_VALUE && v < min) min = v;
+            if(v!=NO_VALUE){
+                if(min==NO_VALUE) min=v;
+                else if (v!=NO_VALUE && v<min) min=v;
+            }
         }
     }
     return min;
 }
 
-int Graph::getWidth() const { return width; }
+unsigned int Graph::getWidth() const { return width; }
 
-int Graph::getHeight() const { return height; }
+unsigned int Graph::getHeight() const { return height; }
+
+/**
+ * @brief Sets the thickness of the x and y axis bars in pixels
+ *
+ * @param t thickness in pixels
+ */
+void Graph::setAxisThickness(unsigned int t) { axisThickness = t; }
+
+unsigned int Graph::getAxisThickness() const { return axisThickness; }
+
+std::array<Linedata, 2> Graph::getLineDataArray() const { return data; }
+
+void Graph::pushData(int index, int d) {
+    if (index > data.size() - 1) {
+        return;
+    }
+    data[index].pushBack(d);
+}
