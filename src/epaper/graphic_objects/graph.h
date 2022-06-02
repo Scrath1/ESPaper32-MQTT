@@ -35,6 +35,11 @@ class Graph {
     unsigned int getAxisThickness() const;
     std::array<Linedata, 2> getLineDataArray() const;
     void pushData(int index, int data);
+    unsigned int getIntervalDistance() const;
+    void setIntervalDistance(unsigned int d);
+    unsigned int getLabelFrequency() const;
+    void setLabelFrequency(unsigned int f);
+
 
     Linedata& operator[](int i){
         return data[i];
@@ -44,6 +49,8 @@ class Graph {
     std::array<Linedata, 2> data;  // for now only 2 lines are allowed
     unsigned int width;
     unsigned int height;
+    unsigned int labelFrequency;
+    unsigned int intervalDistance; // how large the intervals on the y axis between results are
     unsigned int axisThickness;
 };
 

@@ -1,23 +1,49 @@
 #include "epdframe.h"
 
+#include <string>
+
 // has to be allocated in BSS section. Too large for stack
 static unsigned char _redBuffer[BUFFERSIZE];    // used in redCanvas
 static unsigned char _blackBuffer[BUFFERSIZE];  // used in blackCanvas
 
-EPDFrame::EPDFrame() : redCanvas(_redBuffer, EPD_WIDTH, EPD_HEIGHT), blackCanvas(_blackBuffer, EPD_WIDTH, EPD_HEIGHT) {
+EPDFrame::EPDFrame() : redCanvas(_redBuffer, EPD_WIDTH, EPD_HEIGHT), blackCanvas(_blackBuffer, EPD_WIDTH, EPD_HEIGHT), asleep(true) {
     clearRed();
     clearBlack();
+    awaken();
 }
 
-void EPDFrame::refresh() {
-    epd.Reset();
-    if (epd.Init() != 0) {
-        Serial.print("e-Paper init failed");
-        return;
-    }
-    epd.ClearFrame();
+/**
+ * @brief Refreshes the entire e-paper display
+ *
+ * @param clear default: true clears the entire display SRAM
+ */
+void EPDFrame::refresh(bool clear) {
+    if (clear) epd.ClearFrame();
     epd.DisplayFrame(_blackBuffer, _redBuffer);
+}
+
+/**
+ * @brief Puts display into deep sleep. Can be woken using awaken()
+ *
+ */
+void EPDFrame::sleep() {
     epd.Sleep();
+    asleep = true;
+}
+
+/**
+ * @brief Wakes up display from deep sleep. If display is awake does nothing
+ *
+ */
+void EPDFrame::awaken() {
+    if (asleep) {
+        epd.Reset();
+        if (epd.Init() != 0) {
+            Serial.print("e-Paper init failed");
+            return;
+        }
+        asleep = false;
+    }
 }
 
 /**
@@ -60,12 +86,14 @@ void EPDFrame::clearBlack(bool fill) {
 void EPDFrame::drawPixel(int x, int y, Color color) {
     switch (color) {
         case WHITE:
+            blackCanvas.DrawPixel(x, y, UNCOLORED);
             redCanvas.DrawPixel(x, y, UNCOLORED);
             break;
         case RED:
             redCanvas.DrawPixel(x, y, COLORED);
             break;
         default:
+            redCanvas.DrawPixel(x, y, UNCOLORED);
             blackCanvas.DrawPixel(x, y, COLORED);
     }
 }
@@ -73,15 +101,18 @@ void EPDFrame::drawPixel(int x, int y, Color color) {
 void EPDFrame::drawLine(int x0, int y0, int x1, int y1, Color color) {
     switch (color) {
         case WHITE:
+            blackCanvas.DrawLine(x0, y0, x1, y1, UNCOLORED);
             redCanvas.DrawLine(x0, y0, x1, y1, UNCOLORED);
             break;
         case RED:
             redCanvas.DrawLine(x0, y0, x1, y1, COLORED);
             break;
         case DARK_RED:
+            redCanvas.DrawLine(x0, y0, x1, y1, UNCOLORED);
             drawDarkRedLine(x0, y0, x1, y1);
             break;
         default:
+            redCanvas.DrawLine(x0, y0, x1, y1, UNCOLORED);
             blackCanvas.DrawLine(x0, y0, x1, y1, COLORED);
     }
 }
@@ -89,15 +120,18 @@ void EPDFrame::drawLine(int x0, int y0, int x1, int y1, Color color) {
 void EPDFrame::drawHorizontalLine(int x, int y, int width, Color color) {
     switch (color) {
         case WHITE:
+            blackCanvas.DrawHorizontalLine(x, y, width, UNCOLORED);
             redCanvas.DrawHorizontalLine(x, y, width, UNCOLORED);
             break;
         case RED:
             redCanvas.DrawHorizontalLine(x, y, width, COLORED);
             break;
         case DARK_RED:
+            redCanvas.DrawHorizontalLine(x, y, width, UNCOLORED);
             drawDarkRedHorizontalLine(x, y, width);
             break;
         default:
+            redCanvas.DrawHorizontalLine(x, y, width, UNCOLORED);
             blackCanvas.DrawHorizontalLine(x, y, width, COLORED);
     }
 }
@@ -105,15 +139,18 @@ void EPDFrame::drawHorizontalLine(int x, int y, int width, Color color) {
 void EPDFrame::drawVerticalLine(int x, int y, int height, Color color) {
     switch (color) {
         case WHITE:
+            blackCanvas.DrawVerticalLine(x, y, height, UNCOLORED);
             redCanvas.DrawVerticalLine(x, y, height, UNCOLORED);
             break;
         case RED:
             redCanvas.DrawVerticalLine(x, y, height, COLORED);
             break;
         case DARK_RED:
+            redCanvas.DrawVerticalLine(x, y, height, UNCOLORED);
             drawDarkRedVerticalLine(x, y, height);
             break;
         default:
+            redCanvas.DrawVerticalLine(x, y, height, UNCOLORED);
             blackCanvas.DrawVerticalLine(x, y, height, COLORED);
     }
 }
@@ -121,12 +158,14 @@ void EPDFrame::drawVerticalLine(int x, int y, int height, Color color) {
 void EPDFrame::drawCharAt(int x, int y, char ascii_char, sFONT* font, Color color) {
     switch (color) {
         case WHITE:
+            blackCanvas.DrawCharAt(x, y, ascii_char, font, UNCOLORED);
             redCanvas.DrawCharAt(x, y, ascii_char, font, UNCOLORED);
             break;
         case RED:
             redCanvas.DrawCharAt(x, y, ascii_char, font, COLORED);
             break;
         default:
+            redCanvas.DrawCharAt(x, y, ascii_char, font, COLORED);
             blackCanvas.DrawCharAt(x, y, ascii_char, font, COLORED);
     }
 }
@@ -134,44 +173,76 @@ void EPDFrame::drawCharAt(int x, int y, char ascii_char, sFONT* font, Color colo
 void EPDFrame::drawStringAt(int x, int y, const char* text, sFONT* font, Color color) {
     switch (color) {
         case WHITE:
+            blackCanvas.DrawStringAt(x, y, text, font, UNCOLORED);
             redCanvas.DrawStringAt(x, y, text, font, UNCOLORED);
             break;
         case RED:
             redCanvas.DrawStringAt(x, y, text, font, COLORED);
             break;
         default:
+            redCanvas.DrawStringAt(x, y, text, font, UNCOLORED);
             blackCanvas.DrawStringAt(x, y, text, font, COLORED);
     }
 }
 
 void EPDFrame::drawRectangle(int x0, int y0, int x1, int y1, Color color, bool filled) {
-    Paint& canvas = blackCanvas;
-    int colored = 0;
-    if (color == WHITE)
-        colored = UNCOLORED;
-    else if (color == RED)
-        canvas = redCanvas;
-    else if (color == DARK_RED && filled)
-        drawDarkRedFilledRectangle(x0, y0, x1, y1);
-
-    if (filled)
-        canvas.DrawFilledRectangle(x0, y0, x1, y1, colored);
-    else
-        canvas.DrawRectangle(x0, y0, x1, y1, colored);
+    switch (color) {
+        case WHITE:
+            if (filled) {
+                blackCanvas.DrawFilledRectangle(x0, y0, x1, y1, UNCOLORED);
+                redCanvas.DrawFilledRectangle(x0, y0, x1, y1, UNCOLORED);
+            } else {
+                blackCanvas.DrawRectangle(x0, y0, x1, y1, UNCOLORED);
+                redCanvas.DrawRectangle(x0, y0, x1, y1, UNCOLORED);
+            }
+            break;
+        case RED:  // red is the foremost layer and doesn't need to erase other layers to be visible
+            if (filled)
+                redCanvas.DrawFilledRectangle(x0, y0, x1, y1, COLORED);
+            else
+                redCanvas.DrawRectangle(x0, y0, x1, y1, COLORED);
+        case DARK_RED:
+            if (filled) drawDarkRedFilledRectangle(x0, y0, x1, y1);
+            break;
+        case BLACK:  // black is default
+        default:
+            if (filled) {
+                blackCanvas.DrawFilledRectangle(x0, y0, x1, y1, COLORED);
+                redCanvas.DrawFilledRectangle(x0, y0, x1, y1, UNCOLORED);
+            } else {
+                blackCanvas.DrawRectangle(x0, y0, x1, y1, COLORED);
+                redCanvas.DrawRectangle(x0, y0, x1, y1, UNCOLORED);
+            }
+    }
 }
 
 void EPDFrame::drawCircle(int x, int y, int radius, Color color, bool filled) {
-    Paint& canvas = blackCanvas;
-    int colored = 0;
-    if (color == WHITE)
-        colored = UNCOLORED;
-    else if (color == RED)
-        canvas = redCanvas;
-
-    if (filled)
-        canvas.DrawFilledCircle(x, y, radius, colored);
-    else
-        canvas.DrawCircle(x, y, radius, colored);
+    switch (color) {
+        case WHITE:
+            if (filled) {
+                redCanvas.DrawFilledCircle(x, y, radius, UNCOLORED);
+                blackCanvas.DrawFilledCircle(x, y, radius, UNCOLORED);
+            } else {
+                redCanvas.DrawCircle(x, y, radius, UNCOLORED);
+                blackCanvas.DrawCircle(x, y, radius, UNCOLORED);
+            }
+            break;
+        case RED:
+            if (filled)
+                redCanvas.DrawFilledCircle(x, y, radius, COLORED);
+            else
+                redCanvas.DrawCircle(x, y, radius, COLORED);
+            break;
+        case BLACK:
+        default:
+            if (filled) {
+                redCanvas.DrawFilledCircle(x, y, radius, UNCOLORED);
+                blackCanvas.DrawFilledCircle(x, y, radius, COLORED);
+            } else {
+                redCanvas.DrawCircle(x, y, radius, UNCOLORED);
+                blackCanvas.DrawCircle(x, y, radius, COLORED);
+            }
+    }
 }
 
 /**
@@ -192,43 +263,65 @@ void EPDFrame::drawGraphXIntervalbars(int x, int xAxPos, unsigned int h, unsigne
     }
 }
 
-void EPDFrame::drawGraphYIntervalbars(int x, int y, unsigned int h, unsigned int aT, int minVal, int numIntervals) {
+void EPDFrame::drawGraphYIntervalbars(int x, int y, unsigned int h, unsigned int aT, int maxVal, int numIntervals) {
+    int yOffset = h / numIntervals;
+    for (int i = 0; i <= numIntervals; ++i) {
+        blackCanvas.DrawHorizontalLine(x - 5, y + yOffset * i, 10 + aT, COLORED);
+    }
+}
+
+int digitCount(int number) {
+    int count = 0;
+    while (number != 0) {
+        number /= 10;
+        count++;
+    }
+    return count;
+}
+
+void EPDFrame::drawGraphYLabels(int x, int y, unsigned int h, int maxVal, unsigned int numIntervals, unsigned int yIntervalDistance, unsigned int labelFrequency) {
+    int yOffset = h / numIntervals;
+    for (int i = 0; i <= numIntervals; ++i) {
+        if (i % labelFrequency == 0) {
+            int curVal = maxVal - i * yIntervalDistance;
+            char buffer[digitCount(curVal)];
+            sprintf(buffer, "%d", curVal);
+            blackCanvas.DrawStringAt(x - 15, y + yOffset * i, buffer, &Font8, COLORED);
+        }
+    }
 }
 
 void EPDFrame::drawGraph(int x, int y, const Graph& graph) {
-    unsigned int h = graph.getHeight();
-    unsigned int w = graph.getWidth();
-    unsigned int aT = graph.getAxisThickness();
-    int maxVal = graph.getMaxValue();
-    int minVal = graph.getMinValue();
-    maxVal = maxVal % 5 ? maxVal + 5 - (maxVal % 5) : maxVal;  // scales to next largest number divisible by 5
-    minVal = minVal % 5 ? minVal - 5 + (minVal % 5) : minVal;
+    unsigned int h = graph.getHeight();                                             // total graph height
+    unsigned int w = graph.getWidth();                                              // total graph width
+    unsigned int aT = graph.getAxisThickness();                                     // axis thickness
+    int maxVal = graph.getMaxValue();                                               // maximum data value (used for scaling)
+    int minVal = graph.getMinValue();                                               // minimum data value (used for scaling)
+    int yIntDist = graph.getIntervalDistance();                                     // y distance between two y labels, relative to data (NOT absolute pixel count)
+    maxVal = maxVal % yIntDist ? maxVal + yIntDist - (maxVal % yIntDist) : maxVal;  // scales to next largest number divisible by 5
+    minVal = minVal % yIntDist ? minVal - yIntDist + (minVal % yIntDist) : minVal;
     int absMaxVal = sqrt(maxVal * maxVal);
     int absMinVal = sqrt(minVal * minVal);
 
-    int numYIntervals = (absMaxVal + absMinVal) / 5;
+    int numYIntervals = (absMaxVal + absMinVal) / yIntDist;  // number of intervals on y axis (y axis label bars -1)
 
     // y position of the x axis
-    unsigned int xAxPos = y + h - (static_cast<float>(h) * (static_cast<float>(absMinVal) / absMaxVal));
-    Serial.print("xAxPos: ");
-    Serial.println(xAxPos);
-    blackCanvas.DrawFilledRectangle(x, y, x + aT, y + h, COLORED);            // y axis bar
-    blackCanvas.DrawFilledRectangle(x, xAxPos, x + w, xAxPos + aT, COLORED);  // x axis bar
+    unsigned int xAxPos = y - aT / 2 + ((static_cast<float>(h) / (absMaxVal + absMinVal)) * absMaxVal);
+    blackCanvas.DrawFilledRectangle(x, y, x + aT - 1, y + h, COLORED);            // y axis bar
+    blackCanvas.DrawFilledRectangle(x, xAxPos, x + w, xAxPos + aT - 1, COLORED);  // x axis bar
 
     int dSize = graph.getLineDataArray()[0].size();
     int xOffset = w / (dSize - 1);
     drawGraphXIntervalbars(x, xAxPos, h, w, aT, dSize);
-    drawGraphYIntervalbars(x, y, h, aT, minVal, numYIntervals);
+    drawGraphYIntervalbars(x, y, h, aT, maxVal, numYIntervals);
+    drawGraphYLabels(x, y, h, maxVal, numYIntervals, yIntDist, graph.getLabelFrequency());
 
     // draw data lines
     for (Linedata d : graph.getLineDataArray()) {
         for (int i = 1; i < dSize; ++i) {
             if (d[i] == NO_VALUE) break;
-            // TODO: scale data to axis;
-            // int y0 = xAxPos-map(d[i-1], 0, h, minVal, maxVal);
-            int y0 = xAxPos - d[i - 1];
-            int y1 = xAxPos - d[i];
-            // int y1 = xAxPos-map(d[i], 0, h, minVal, maxVal);
+            int y0 = h + y - map(d[i - 1], minVal, maxVal, 0, h);
+            int y1 = h + y - map(d[i], minVal, maxVal, 0, h);
             int x0 = x + aT + xOffset * (i - 1);
             int x1 = x + aT + xOffset * (i);
 
@@ -253,15 +346,13 @@ void EPDFrame::drawDarkRedLine(int x0, int y0, int x1, int y1) {
     int dy = y1 - y0 <= 0 ? y1 - y0 : y0 - y1;
     int sy = y0 < y1 ? 1 : -1;
     int err = dx + dy;
-    Paint* paint;
     int counter = 0;
     while ((x0 != x1) && (y0 != y1)) {
         // draw every second pixel red or black
         if (counter % 2)
-            paint = &redCanvas;
+            redCanvas.DrawPixel(x0, y0, COLORED);
         else
-            paint = &blackCanvas;
-        paint->DrawPixel(x0, y0, COLORED);
+            blackCanvas.DrawPixel(x0, y0, COLORED);
         if (2 * err >= dy) {
             err += dy;
             x0 += sx;
@@ -275,25 +366,21 @@ void EPDFrame::drawDarkRedLine(int x0, int y0, int x1, int y1) {
 }
 
 void EPDFrame::drawDarkRedHorizontalLine(int x, int y, int line_width) {
-    Paint* paint;
     for (int i = x; i < x + line_width; i++) {
         // draw every second pixel red or black
         if (i % 2)
-            paint = &redCanvas;
+            redCanvas.DrawPixel(i, y, COLORED);
         else
-            paint = &blackCanvas;
-        paint->DrawPixel(i, y, COLORED);
+            blackCanvas.DrawPixel(i, y, COLORED);
     }
 }
 
 void EPDFrame::drawDarkRedVerticalLine(int x, int y, int line_height) {
-    Paint* paint;
     for (int i = y; i < y + line_height; i++) {
         if (i % 2)
-            paint = &redCanvas;
+            redCanvas.DrawPixel(x, i, COLORED);
         else
-            paint = &blackCanvas;
-        paint->DrawPixel(x, i, COLORED);
+            blackCanvas.DrawPixel(x, i, COLORED);
     }
 }
 
@@ -303,14 +390,14 @@ void EPDFrame::drawDarkRedFilledRectangle(int x0, int y0, int x1, int y1) {
     max_x = x1 > x0 ? x1 : x0;
     min_y = y1 > y0 ? y0 : y1;
     max_y = y1 > y0 ? y1 : y0;
-    Paint* paint;
+    int counter = 0;
     for (int i = min_x; i <= max_x; i++) {
         for (int j = min_y; j <= max_y; j++) {
-            if (i * j % 2)
-                paint = &redCanvas;
+            if (counter % 2)
+                redCanvas.DrawPixel(i, j, COLORED);
             else
-                paint = &blackCanvas;
-            paint->DrawPixel(i, j, COLORED);
+                blackCanvas.DrawPixel(i, j, COLORED);
+            counter++;
         }
     }
 }

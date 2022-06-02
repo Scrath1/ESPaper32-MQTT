@@ -1,6 +1,6 @@
 #include "graph.h"
 
-Linedata::Linedata() : newestIndex(data.size()-1) {
+Linedata::Linedata() : newestIndex(data.size() - 1) {
     for (int i = 0; i < data.size(); ++i) {
         data[i] = NO_VALUE;
     }
@@ -11,14 +11,14 @@ Linedata::Linedata(const char* l) : label(l) {
 }
 
 void Linedata::pushBack(int d) {
-    newestIndex = ++newestIndex%data.size();
+    newestIndex = ++newestIndex % data.size();
     data[newestIndex] = d;
 }
 
 int Linedata::size() const { return data.size(); }
 
 Graph::Graph(unsigned int w, unsigned int h)
-    : width(w), height(h) {
+    : width(w), height(h),labelFrequency(2), intervalDistance(5), axisThickness(1)  {
 }
 
 /**
@@ -45,9 +45,11 @@ int Graph::getMinValue() const {
     int min = NO_VALUE;
     for (Linedata a : data) {
         for (int v : a.data) {
-            if(v!=NO_VALUE){
-                if(min==NO_VALUE) min=v;
-                else if (v!=NO_VALUE && v<min) min=v;
+            if (v != NO_VALUE) {
+                if (min == NO_VALUE)
+                    min = v;
+                else if (v != NO_VALUE && v < min)
+                    min = v;
             }
         }
     }
@@ -75,3 +77,9 @@ void Graph::pushData(int index, int d) {
     }
     data[index].pushBack(d);
 }
+
+unsigned int Graph::getIntervalDistance() const { return intervalDistance; }
+void Graph::setIntervalDistance(unsigned int d) { intervalDistance = d; }
+
+unsigned int Graph::getLabelFrequency() const { return labelFrequency; }
+void Graph::setLabelFrequency(unsigned int f) { labelFrequency = f; }
