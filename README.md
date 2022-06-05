@@ -7,7 +7,7 @@ A project to build an e-paper display that can display data from subbing to MQTT
 - [ ] Display customization from webinterface
 - [x] Graph support
 - [ ] Image support
-
+- [ ] CSS for the webinterface (low priority)
 
 ## Hardware
 - ESP32
