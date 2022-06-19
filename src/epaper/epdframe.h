@@ -5,6 +5,9 @@
 #include "epdpaint.h"
 #include "graphic_objects/graph.h"
 
+class Graph;
+class GraphicObject;
+
 enum Color {
     WHITE = 0,
     BLACK = 1,
@@ -20,6 +23,11 @@ class EPDFrame {
     void awaken();
     bool isAsleep() const;
     void displayGrid();
+    Paint& getBlackCanvasRef();
+    Paint& getRedCanvasRef();
+    void drawGraphicObjects();
+    void addGraphicObject(Graph& graph);
+    // void addGraphicObject(GraphicObject* object);
 
     void clearRed(bool fill = false);
     void clearBlack(bool fill = false);
@@ -31,7 +39,6 @@ class EPDFrame {
     void drawStringAt(int x, int y, const char* text, sFONT* font, Color color);
     void drawRectangle(int x0, int y0, int x1, int y1, Color color, bool filled = false);
     void drawCircle(int x, int y, int radius, Color color, bool filled = false);
-    void drawGraph(int x, int y, const Graph& graph);
 
    private:
     void drawDarkRedLine(int x0, int y0, int x1, int y1);
@@ -45,5 +52,6 @@ class EPDFrame {
     Paint redCanvas;
     Paint blackCanvas;
     bool asleep;
+    std::vector<GraphicObject*> graphicObjects;
 };
 #endif

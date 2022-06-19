@@ -3,6 +3,8 @@
 #include <array>
 #include <queue>
 
+#include "graphic_object.h"
+
 // equivalent to no data in array
 #define NO_VALUE -255
 
@@ -17,16 +19,18 @@ struct Linedata {
 
     int& operator[](int i) {
         int index;
-        if(data[data.size()-1]!=NO_VALUE) index = (newestIndex+data.size()+1+i)%data.size();
-        else index=i;
+        if (data[data.size() - 1] != NO_VALUE)
+            index = (newestIndex + data.size() + 1 + i) % data.size();
+        else
+            index = i;
         return data[index];
     }
     int size() const;
 };
 
-class Graph {
+class Graph : public GraphicObject {
    public:
-    Graph(unsigned int w, unsigned int h);
+    Graph(int x, int y, unsigned int w, unsigned int h);
     int getMaxValue() const;
     int getMinValue() const;
     unsigned int getWidth() const;
@@ -35,22 +39,26 @@ class Graph {
     unsigned int getAxisThickness() const;
     std::array<Linedata, 2> getLineDataArray() const;
     void pushData(int index, int data);
-    unsigned int getIntervalDistance() const;
-    void setIntervalDistance(unsigned int d);
+    unsigned int getYIntervalDistance() const;
+    void setYIntervalDistance(unsigned int d);
     unsigned int getLabelFrequency() const;
     void setLabelFrequency(unsigned int f);
+    void draw(EPDFrame& frame) override;
+    
 
-
-    Linedata& operator[](int i){
+    Linedata& operator[](int i) {
         return data[i];
     }
 
    private:
+    void drawGraphXIntervalbars(Paint& blackCanvas, int xAxPos, unsigned int numIntervals);
+    void drawGraphYIntervalbars(Paint& blackCanvas, int maxVal, int numIntervals);
+    void drawGraphYLabels(Paint& blackCanvas, int maxVal, unsigned int numIntervals);
     std::array<Linedata, 2> data;  // for now only 2 lines are allowed
     unsigned int width;
     unsigned int height;
     unsigned int labelFrequency;
-    unsigned int intervalDistance; // how large the intervals on the y axis between results are
+    unsigned int yIntervalDistance;  // how large the intervals on the y axis between results are
     unsigned int axisThickness;
 };
 

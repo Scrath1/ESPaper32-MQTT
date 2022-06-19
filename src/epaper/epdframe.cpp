@@ -47,6 +47,14 @@ void EPDFrame::awaken() {
 }
 
 /**
+ * @brief Check if the epaper module is in sleep mode. Only accurate if sleep mode is controlled by this class and none other.
+ *
+ * @return true
+ * @return false
+ */
+bool EPDFrame::isAsleep() const { return asleep; }
+
+/**
  * @brief Displays a horizontal and vertical line every 50 pixels
  * Vertical lines are black, horizontal lines are red
  */
@@ -56,6 +64,28 @@ void EPDFrame::displayGrid() {
     }
     for (int y = 50; y < EPD_HEIGHT; y += 50) {
         redCanvas.DrawHorizontalLine(0, y, EPD_WIDTH, COLORED);
+    }
+}
+
+void EPDFrame::addGraphicObject(Graph& graph) {
+    graphicObjects.push_back(new Graph(graph));
+}
+
+// void EPDFrame::addGraphicObject(GraphicObject* object){
+//     graphicObjects.push_back(object);
+// }
+
+Paint& EPDFrame::getBlackCanvasRef() {
+    return blackCanvas;
+}
+
+Paint& EPDFrame::getRedCanvasRef() {
+    return redCanvas;
+}
+
+void EPDFrame::drawGraphicObjects() {
+    for (GraphicObject* g : graphicObjects) {
+        g->draw(*this);
     }
 }
 
@@ -242,92 +272,6 @@ void EPDFrame::drawCircle(int x, int y, int radius, Color color, bool filled) {
                 redCanvas.DrawCircle(x, y, radius, UNCOLORED);
                 blackCanvas.DrawCircle(x, y, radius, COLORED);
             }
-    }
-}
-
-/**
- * @brief Draws the interval bars for the graph
- *
- * @param x x position of the graph
- * @param xAxPos y position of the graphs x-axis
- * @param h graph height
- * @param w graph width
- * @param aT graph axisThickness
- * @param numIntervals number of intervals on the x-Axis
- */
-void EPDFrame::drawGraphXIntervalbars(int x, int xAxPos, unsigned int h, unsigned int w, unsigned int aT, unsigned int numIntervals) {
-    int xOffset = w / (numIntervals - 1);
-    // x intervals
-    for (int i = 1; i < numIntervals; ++i) {
-        blackCanvas.DrawVerticalLine(x + aT + xOffset * i, xAxPos - 5, 10 + aT, COLORED);
-    }
-}
-
-void EPDFrame::drawGraphYIntervalbars(int x, int y, unsigned int h, unsigned int aT, int maxVal, int numIntervals) {
-    int yOffset = h / numIntervals;
-    for (int i = 0; i <= numIntervals; ++i) {
-        blackCanvas.DrawHorizontalLine(x - 5, y + yOffset * i, 10 + aT, COLORED);
-    }
-}
-
-int digitCount(int number) {
-    int count = 0;
-    while (number != 0) {
-        number /= 10;
-        count++;
-    }
-    return count;
-}
-
-void EPDFrame::drawGraphYLabels(int x, int y, unsigned int h, int maxVal, unsigned int numIntervals, unsigned int yIntervalDistance, unsigned int labelFrequency) {
-    int yOffset = h / numIntervals;
-    for (int i = 0; i <= numIntervals; ++i) {
-        if (i % labelFrequency == 0) {
-            int curVal = maxVal - i * yIntervalDistance;
-            char buffer[digitCount(curVal)];
-            sprintf(buffer, "%d", curVal);
-            blackCanvas.DrawStringAt(x - 15, y + yOffset * i, buffer, &Font8, COLORED);
-        }
-    }
-}
-
-void EPDFrame::drawGraph(int x, int y, const Graph& graph) {
-    unsigned int h = graph.getHeight();                                             // total graph height
-    unsigned int w = graph.getWidth();                                              // total graph width
-    unsigned int aT = graph.getAxisThickness();                                     // axis thickness
-    int maxVal = graph.getMaxValue();                                               // maximum data value (used for scaling)
-    int minVal = graph.getMinValue();                                               // minimum data value (used for scaling)
-    int yIntDist = graph.getIntervalDistance();                                     // y distance between two y labels, relative to data (NOT absolute pixel count)
-    maxVal = maxVal % yIntDist ? maxVal + yIntDist - (maxVal % yIntDist) : maxVal;  // scales to next largest number divisible by 5
-    minVal = minVal % yIntDist ? minVal - yIntDist + (minVal % yIntDist) : minVal;
-    int absMaxVal = sqrt(maxVal * maxVal);
-    int absMinVal = sqrt(minVal * minVal);
-
-    int numYIntervals = (absMaxVal + absMinVal) / yIntDist;  // number of intervals on y axis (y axis label bars -1)
-
-    // y position of the x axis
-    unsigned int xAxPos = y - aT / 2 + ((static_cast<float>(h) / (absMaxVal + absMinVal)) * absMaxVal);
-    blackCanvas.DrawFilledRectangle(x, y, x + aT - 1, y + h, COLORED);            // y axis bar
-    blackCanvas.DrawFilledRectangle(x, xAxPos, x + w, xAxPos + aT - 1, COLORED);  // x axis bar
-
-    int dSize = graph.getLineDataArray()[0].size();
-    int xOffset = w / (dSize - 1);
-    drawGraphXIntervalbars(x, xAxPos, h, w, aT, dSize);
-    drawGraphYIntervalbars(x, y, h, aT, maxVal, numYIntervals);
-    drawGraphYLabels(x, y, h, maxVal, numYIntervals, yIntDist, graph.getLabelFrequency());
-
-    // draw data lines
-    for (Linedata d : graph.getLineDataArray()) {
-        for (int i = 1; i < dSize; ++i) {
-            if (d[i] == NO_VALUE) break;
-            int y0 = h + y - map(d[i - 1], minVal, maxVal, 0, h);
-            int y1 = h + y - map(d[i], minVal, maxVal, 0, h);
-            int x0 = x + aT + xOffset * (i - 1);
-            int x1 = x + aT + xOffset * (i);
-
-            // draw line from point 0 to point 1
-            blackCanvas.DrawLine(x0, y0, x1, y1, COLORED);
-        }
     }
 }
 

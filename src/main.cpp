@@ -106,7 +106,7 @@ void setup() {
     EPDFrame frame;
     frame.awaken();
     // frame.displayGrid();
-    Graph g(200, 250);
+    Graph g(40, 10, 200, 250);
     g.setAxisThickness(3);
     g.pushData(0, 15);
     // g.pushData(0, -25);
@@ -120,7 +120,9 @@ void setup() {
     g.pushData(0, 10);
     g.pushData(0, -10);
     g.pushData(0, 0);
-    frame.drawGraph(40, 10, g);
+    frame.addGraphicObject(g);
+    frame.drawGraphicObjects();
+    
     int x0 = 50;
     int x1 = 250;
     int y0 = 50;
