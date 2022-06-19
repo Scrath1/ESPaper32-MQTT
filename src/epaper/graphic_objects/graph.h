@@ -1,7 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 #include <array>
-#include <queue>
 
 #include "graphic_object.h"
 

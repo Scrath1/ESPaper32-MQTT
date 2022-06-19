@@ -1,7 +1,7 @@
 #ifndef GRAPHIC_OBJECT_H
 #define GRAPHIC_OBJECT_H
 #include "../epdframe.h"
-class EPDFrame; //forward declaration to fix circular dependency with EPDFrame
+class EPDFrame; //forward declaration to fix circular dependency with EPDFrame via derived classes
 class GraphicObject {
    public:
     GraphicObject(int x, int y) : x(x), y(y) {}
