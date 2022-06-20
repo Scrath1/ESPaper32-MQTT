@@ -26,8 +26,8 @@ class EPDFrame {
     Paint& getBlackCanvasRef();
     Paint& getRedCanvasRef();
     void drawGraphicObjects();
-    void addGraphicObject(Graph& graph);
-    // void addGraphicObject(GraphicObject* object);
+    // void addGraphicObject(Graph& graph);
+    void addGraphicObject(GraphicObject* object);
 
     void clearRed(bool fill = false);
     void clearBlack(bool fill = false);
