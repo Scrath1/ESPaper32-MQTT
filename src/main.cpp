@@ -4,6 +4,7 @@
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
 #include "epaper/epdframe.h"
+#include "epaper/graphic_objects/graph.h"
 #include "webserver.h"
 
 const char* apSSID = "ESP-Epaper";
