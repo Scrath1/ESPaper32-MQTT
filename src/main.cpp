@@ -5,6 +5,7 @@
 #include "SPIFFS.h"
 #include "epaper/epdframe.h"
 #include "epaper/graphic_objects/graph.h"
+#include "epaper/graphic_objects/fixed_digit_display.h"
 #include "webserver.h"
 
 const char* apSSID = "ESP-Epaper";
@@ -119,6 +120,13 @@ void setup() {
     g->pushData(0, -10);
     g->pushData(0, 0);
     frame.addGraphicObject(g);
+
+    FixedDigitDisplay* d = new FixedDigitDisplay(300, 200, &Font24, 3);
+    d->setAlignment(FixedDigitDisplay::RIGHT);
+    d->setColor(RED);
+    d->setContent("1234");
+    frame.addGraphicObject(d);
+
     frame.drawGraphicObjects();
     
     int x0 = 50;
