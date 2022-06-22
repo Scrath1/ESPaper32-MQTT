@@ -4,6 +4,8 @@
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
 #include "epaper/epdframe.h"
+#include "epaper/graphic_objects/graph.h"
+#include "epaper/graphic_objects/fixed_digit_display.h"
 #include "webserver.h"
 
 const char* apSSID = "ESP-Epaper";
@@ -104,8 +106,8 @@ void setup() {
     }
     setupWebServer(server);
     EPDFrame frame;
-    frame.awaken();
-    Graph* g = new Graph(40,10,200,250);
+    // frame.sleep();
+    Graph* g = new Graph(40,10,200,250, &Font24);
     g->setAxisThickness(3);
     g->pushData(0, 15);
     g->pushData(0, 7);
@@ -118,6 +120,13 @@ void setup() {
     g->pushData(0, -10);
     g->pushData(0, 0);
     frame.addGraphicObject(g);
+
+    FixedDigitDisplay* d = new FixedDigitDisplay(300, 200, &Font24, 3);
+    d->setAlignment(FixedDigitDisplay::RIGHT);
+    d->setColor(RED);
+    d->setContent("1234");
+    frame.addGraphicObject(d);
+
     frame.drawGraphicObjects();
     
     int x0 = 50;
@@ -140,7 +149,9 @@ void setup() {
     frame.drawRectangle(300, 75, 400, 125, RED, true);
     frame.drawRectangle(300, 125, 400, 175, BLACK, true);
     frame.drawRectangle(325, 50, 375, 150, WHITE, true);
+    frame.awaken();
     frame.refresh();
+    frame.sleep();
     // displayTestImage();
 }
 

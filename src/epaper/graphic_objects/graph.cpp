@@ -17,8 +17,8 @@ void Linedata::pushBack(int d) {
 
 int Linedata::size() const { return data.size(); }
 
-Graph::Graph(int x, int y, unsigned int w, unsigned int h)
-    : GraphicObject(x, y), width(w), height(h), labelFrequency(2), yIntervalDistance(5), axisThickness(1) {
+Graph::Graph(int x, int y, unsigned int w, unsigned int h, sFONT* font)
+    : GraphicObject(x, y), width(w), height(h), labelFrequency(2), yIntervalDistance(5), axisThickness(1), font(font) {
 }
 
 /**
@@ -76,6 +76,10 @@ void Graph::pushData(int index, int d) {
         return;
     }
     data[index].pushBack(d);
+}
+
+void Graph::setFont(sFONT* f) {
+    font = f;
 }
 
 unsigned int Graph::getYIntervalDistance() const { return yIntervalDistance; }
@@ -160,9 +164,11 @@ void Graph::drawGraphYLabels(Paint& blackCanvas, int maxVal, unsigned int numInt
     for (int i = 0; i <= numIntervals; ++i) {
         if (i % labelFrequency == 0) {
             int curVal = maxVal - i * yIntervalDistance;
-            char buffer[digitCount(curVal)];
-            sprintf(buffer, "%d", curVal);
-            blackCanvas.DrawStringAt(x - 15, y + yOffset * i, buffer, &Font8, COLORED);
+            unsigned int bufferSize = digitCount(curVal);
+            char buffer[bufferSize];
+            if(curVal<0) bufferSize++; //only for drawing the information. Does not impact size of string
+            sprintf(buffer, "%d", curVal); //
+            blackCanvas.DrawStringAt(x - 5 - font->Width*bufferSize, y + yOffset * i, buffer, font, COLORED);
         }
     }
 }

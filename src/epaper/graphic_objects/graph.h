@@ -1,7 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 #include <array>
-#include <queue>
 
 #include "graphic_object.h"
 
@@ -30,7 +29,7 @@ struct Linedata {
 
 class Graph : public GraphicObject {
    public:
-    Graph(int x, int y, unsigned int w, unsigned int h);
+    Graph(int x, int y, unsigned int w, unsigned int h, sFONT* font);
     int getMaxValue() const;
     int getMinValue() const;
     unsigned int getWidth() const;
@@ -39,6 +38,7 @@ class Graph : public GraphicObject {
     unsigned int getAxisThickness() const;
     std::array<Linedata, 2> getLineDataArray() const;
     void pushData(int index, int data);
+    void setFont(sFONT* f);
     unsigned int getYIntervalDistance() const;
     void setYIntervalDistance(unsigned int d);
     unsigned int getLabelFrequency() const;
@@ -60,6 +60,7 @@ class Graph : public GraphicObject {
     unsigned int labelFrequency;
     unsigned int yIntervalDistance;  // how large the intervals on the y axis between results are
     unsigned int axisThickness;
+    sFONT* font;
 };
 
 #endif
