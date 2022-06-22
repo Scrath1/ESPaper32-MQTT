@@ -106,8 +106,8 @@ void setup() {
     }
     setupWebServer(server);
     EPDFrame frame;
-    frame.awaken();
-    Graph* g = new Graph(40,10,200,250);
+    // frame.sleep();
+    Graph* g = new Graph(40,10,200,250, &Font24);
     g->setAxisThickness(3);
     g->pushData(0, 15);
     g->pushData(0, 7);
@@ -149,7 +149,9 @@ void setup() {
     frame.drawRectangle(300, 75, 400, 125, RED, true);
     frame.drawRectangle(300, 125, 400, 175, BLACK, true);
     frame.drawRectangle(325, 50, 375, 150, WHITE, true);
+    frame.awaken();
     frame.refresh();
+    frame.sleep();
     // displayTestImage();
 }
 
