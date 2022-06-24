@@ -1,0 +1,2 @@
+Line,0,0,400,300,BLACK
+Rectangle,0,0,400,300,true,RED

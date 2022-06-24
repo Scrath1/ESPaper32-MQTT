@@ -67,27 +67,12 @@ void EPDFrame::displayGrid() {
     }
 }
 
-/**
- * @brief Add a graphical object (e.g. Graph) to the GraphicObject List. Use with a derived class from GraphicObject.
- * 
- * @param object Object pointer of class derived from GraphicObject
- */
-void EPDFrame::addGraphicObject(GraphicObject* object){
-    graphicObjects.push_back(object);
-}
-
 Paint& EPDFrame::getBlackCanvasRef() {
     return blackCanvas;
 }
 
 Paint& EPDFrame::getRedCanvasRef() {
     return redCanvas;
-}
-
-void EPDFrame::drawGraphicObjects() {
-    for (GraphicObject* g : graphicObjects) {
-        g->draw(*this);
-    }
 }
 
 /**

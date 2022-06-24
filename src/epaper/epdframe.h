@@ -3,9 +3,6 @@
 #include "constants.h"
 #include "epd4in2b_V2.h"
 #include "epdpaint.h"
-#include "graphic_objects/graphic_object.h"
-// #include "graphic_objects/graph.h"
-
 
 class Graph;
 class GraphicObject;
@@ -27,9 +24,6 @@ class EPDFrame {
     void displayGrid();
     Paint& getBlackCanvasRef();
     Paint& getRedCanvasRef();
-    void drawGraphicObjects();
-    // void addGraphicObject(Graph& graph);
-    void addGraphicObject(GraphicObject* object);
 
     void clearRed(bool fill = false);
     void clearBlack(bool fill = false);
@@ -54,6 +48,5 @@ class EPDFrame {
     Paint redCanvas;
     Paint blackCanvas;
     bool asleep;
-    std::vector<GraphicObject*> graphicObjects;
 };
 #endif

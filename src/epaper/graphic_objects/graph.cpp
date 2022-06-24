@@ -166,9 +166,9 @@ void Graph::drawGraphYLabels(Paint& blackCanvas, int maxVal, unsigned int numInt
             int curVal = maxVal - i * yIntervalDistance;
             unsigned int bufferSize = digitCount(curVal);
             char buffer[bufferSize];
-            if(curVal<0) bufferSize++; //only for drawing the information. Does not impact size of string
-            sprintf(buffer, "%d", curVal); //
-            blackCanvas.DrawStringAt(x - 5 - font->Width*bufferSize, y + yOffset * i, buffer, font, COLORED);
+            if (curVal < 0) bufferSize++;   // only for drawing the information. Does not impact size of string
+            sprintf(buffer, "%d", curVal);  //
+            blackCanvas.DrawStringAt(x - 5 - font->Width * bufferSize, y + yOffset * i, buffer, font, COLORED);
         }
     }
 }
