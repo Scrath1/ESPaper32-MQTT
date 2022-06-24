@@ -70,10 +70,12 @@ void View::parseLine(char* line) {
         tokens.push_back(word);
         word = strtok(nullptr, delim);
     }
-    if (strcmp(tokens[0], "Line") == 0) {
+    if (strncmp(tokens[0], "Line", 4) == 0) {
         lineHandler(tokens);
-    } else if (strcmp(tokens[0], "Rectangle") == 0) {
+    } else if (strncmp(tokens[0], "Rectangle", 9) == 0) {
         rectangleHandler(tokens);
+    } else if (strncmp(tokens[0], "Circle", 6) == 0) {
+        circleHandler(tokens);
     }
 }
 
@@ -98,16 +100,31 @@ void View::lineHandler(const std::vector<const char*>& tokens) {
     int y1 = strtol(tokens[4], (char**)nullptr, 10);
     if (errno != 0) return;  // error occurred while converting integers
     Color color = stringToColor(tokens[5]);
-    Serial.print("Color ID: ");
-    Serial.print(color);
-    Serial.print(", Color string: ");
-    Serial.println(tokens[5]);
-    Serial.print("strlen: ");
-    Serial.println(strlen(tokens[5]));
-    Serial.print("Color string as hex: ");
-    Serial.println(tokens[5]);
     frame.drawLine(x0, y0, x1, y1, color);
 }
 
 void View::rectangleHandler(const std::vector<const char*>& tokens) {
+    if (tokens.size() < 7) return;
+    errno = 0;
+    int x0 = strtol(tokens[1], (char**)nullptr, 10);
+    int y0 = strtol(tokens[2], (char**)nullptr, 10);
+    int x1 = strtol(tokens[3], (char**)nullptr, 10);
+    int y1 = strtol(tokens[4], (char**)nullptr, 10);
+    if (errno != 0) return;  // error occurred while converting integers
+    bool filled = false;
+    if (strncmp(tokens[5], "true", 4) == 0) filled = true;
+    Color color = stringToColor(tokens[6]);
+    frame.drawRectangle(x0, y0, x1, y1, color, filled);
+}
+
+void View::circleHandler(const std::vector<const char*>& tokens) {
+    if (tokens.size() < 6) return;
+    errno = 0;
+    int x = strtol(tokens[1], (char**)nullptr, 10);
+    int y = strtol(tokens[2], (char**)nullptr, 10);
+    int r = strtol(tokens[3], (char**)nullptr, 10);
+    bool filled = false;
+    if (strncmp(tokens[4], "true", 4) == 0) filled = true;
+    Color color = stringToColor(tokens[5]);
+    frame.drawCircle(x, y, r, color, filled);
 }

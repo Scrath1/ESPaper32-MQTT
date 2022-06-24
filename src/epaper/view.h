@@ -23,9 +23,10 @@ class View {
     void drawGraphicObjects();
     char* readFile();
     void parseFile();
-    void parseLine(char* line);                                     // TODO
-    void lineHandler(const std::vector<const char*>& tokens);       // TODO
-    void rectangleHandler(const std::vector<const char*>& tokens);  // TODO
+    void parseLine(char* line);
+    void lineHandler(const std::vector<const char*>& tokens);
+    void rectangleHandler(const std::vector<const char*>& tokens);
+    void circleHandler(const std::vector<const char*>& tokens);
     EPDFrame frame;
     std::vector<GraphicObject*> graphicObjects;
     const char* instructionsFile;

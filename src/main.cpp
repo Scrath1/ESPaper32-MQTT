@@ -154,7 +154,6 @@ void setup() {
     frame.awaken();
     frame.refresh();
     frame.sleep();
-    // displayTestImage();
 }
 
 void loop() {
